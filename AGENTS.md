@@ -207,6 +207,5 @@ docker build -f Dockerfile.worker .
 - `AGENTS.md`
 - `docs/architecture.md`
 - `docs/api.md`
-- 参考项目：`/Users/zhaokang/vpngate/aimili-vpngate`
 - 参考仓库：`https://github.com/Guozh1peng/aimili-vpngate`
-
+- 原项目代码不属于本仓库；需要对照时单独克隆，不要复制进 ExitFleet。

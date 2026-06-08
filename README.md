@@ -9,17 +9,8 @@ ExitFleet 是一个使用 Go 重构的容器原生多出口代理网关。它参
 一个活跃出口节点 = 一个 worker 容器
 ```
 
-原项目参考代码保留在：
-
-```text
-/Users/zhaokang/vpngate/aimili-vpngate
-```
-
-当前 Go 重构项目位于：
-
-```text
-/Users/zhaokang/vpngate/exitfleet
-```
+原项目只作为设计和行为参考，不会作为本仓库的一部分提交。需要对照原实现时，请单独克隆
+`Guozh1peng/aimili-vpngate`。
 
 ## 项目定位
 
@@ -198,12 +189,6 @@ zsh:1: command not found: go
 https://github.com/juanlou1217/exitfleet
 ```
 
-本地目录：
-
-```text
-/Users/zhaokang/vpngate/exitfleet
-```
-
 GitHub 操作要求使用本地 `gh`：
 
 ```bash
@@ -218,12 +203,6 @@ git push --force origin main
 
 ```text
 https://github.com/Guozh1peng/aimili-vpngate
-```
-
-本地参考目录：
-
-```text
-/Users/zhaokang/vpngate/aimili-vpngate
 ```
 
 原项目提供行为参考：
@@ -263,4 +242,3 @@ ExitFleet 不会把原 Python 文件复制进新仓库，也不会继续扩展 P
 - `AGENTS.md`
 - `docs/architecture.md`
 - `docs/api.md`
-
