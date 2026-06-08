@@ -153,7 +153,30 @@ RuntimeRule = One active exit node maps to exactly one worker container.
 - 代理：Go 实现 HTTP CONNECT + SOCKS5
 - 日志：结构化日志 + SSE 流式输出
 
+## 使用方式
+
+ExitFleet 面向普通使用者时，不要求在机器上安装 Go 工具链。后续发布版本应优先提供两类产物：
+
+```text
+预编译二进制
+Docker 镜像
+```
+
+推荐使用方式：
+
+```bash
+# 方式一：下载 Release 中的预编译二进制
+exitfleet-manager
+
+# 方式二：使用 Docker/Compose 启动 manager 和 worker
+docker compose up -d
+```
+
+当前项目仍处于初始化阶段，正式的 Release、Dockerfile 和 Compose 文件还没有建立。发布能力会作为后续功能单独设计和实现。
+
 ## 开发命令
+
+以下命令只面向开发者和 CI。普通部署应使用 Release 产物或 Docker 镜像。
 
 ```bash
 go test ./...
@@ -161,50 +184,6 @@ go fmt ./...
 go run ./cmd/manager
 go run ./cmd/worker
 ```
-
-当前机器如果没有安装 Go，会出现：
-
-```text
-zsh:1: command not found: go
-```
-
-这种情况下需要先安装 Go 工具链后再执行验证。
-
-## GitHub
-
-当前仓库：
-
-```text
-https://github.com/juanlou1217/exitfleet
-```
-
-GitHub 操作要求使用本地 `gh`：
-
-```bash
-gh auth status
-git push origin main
-git push --force origin main
-```
-
-## 与原项目的关系
-
-原项目：
-
-```text
-https://github.com/Guozh1peng/aimili-vpngate
-```
-
-原项目提供行为参考：
-
-- VPNGate 节点拉取
-- OpenVPN 配置解析
-- 节点测试
-- 多出口代理
-- HTTP/SOCKS5 代理
-- Web 管理后台
-- 日志和诊断
-
-ExitFleet 不会把原 Python 文件复制进新仓库，也不会继续扩展 Python 版本。重构方向是重新设计 Go 的模块边界和容器运行模型。
 
 ## 当前阶段
 
@@ -220,11 +199,12 @@ ExitFleet 不会把原 Python 文件复制进新仓库，也不会继续扩展 P
 
 下一步建议：
 
-1. 安装 Go 工具链并跑通 `go test ./...`。
-2. 实现 `internal/api` 的 HTTP router。
-3. 设计 SQLite schema。
-4. 实现 VPNGate 节点拉取和解析模块。
-5. 实现 worker 容器生命周期管理。
+1. 建立 Release 打包方案，支持预编译二进制。
+2. 增加 Dockerfile 和 Compose 示例。
+3. 实现 `internal/api` 的 HTTP router。
+4. 设计 SQLite schema。
+5. 实现 VPNGate 节点拉取和解析模块。
+6. 实现 worker 容器生命周期管理。
 
 ## 重要文档
 
