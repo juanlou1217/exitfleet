@@ -10,10 +10,14 @@ import (
 )
 
 type Manager struct {
-	Host          string
-	Port          int
-	VPNGateURL    string
-	ProxyBasePort int
+	Host                  string
+	Port                  int
+	VPNGateURL            string
+	ProxyBasePort         int
+	DockerCommand         string
+	DockerWorkerImage     string
+	DockerContainerPrefix string
+	DockerNetwork         string
 }
 
 type Worker struct {
@@ -29,23 +33,30 @@ type Env map[string]string
 const (
 	DefaultVPNGateURL = "https://www.vpngate.net/api/iphone/"
 
-	EnvManagerHost     = "EXITFLEET_MANAGER_HOST"
-	EnvManagerPort     = "EXITFLEET_MANAGER_PORT"
-	EnvVPNGateURL      = "EXITFLEET_VPNGATE_URL"
-	EnvProxyBasePort   = "EXITFLEET_PROXY_BASE_PORT"
-	EnvWorkerProxyHost = "EXITFLEET_WORKER_PROXY_HOST"
-	EnvWorkerProxyPort = "EXITFLEET_WORKER_PROXY_PORT"
-	EnvWorkerTunDevice = "EXITFLEET_WORKER_TUN_DEVICE"
-	EnvOpenVPNCommand  = "EXITFLEET_OPENVPN_CMD"
-	EnvOpenVPNAuthFile = "EXITFLEET_OPENVPN_AUTH_FILE"
+	EnvManagerHost           = "EXITFLEET_MANAGER_HOST"
+	EnvManagerPort           = "EXITFLEET_MANAGER_PORT"
+	EnvVPNGateURL            = "EXITFLEET_VPNGATE_URL"
+	EnvProxyBasePort         = "EXITFLEET_PROXY_BASE_PORT"
+	EnvDockerCommand         = "EXITFLEET_DOCKER_CMD"
+	EnvDockerWorkerImage     = "EXITFLEET_DOCKER_WORKER_IMAGE"
+	EnvDockerContainerPrefix = "EXITFLEET_DOCKER_CONTAINER_PREFIX"
+	EnvDockerNetwork         = "EXITFLEET_DOCKER_NETWORK"
+	EnvWorkerProxyHost       = "EXITFLEET_WORKER_PROXY_HOST"
+	EnvWorkerProxyPort       = "EXITFLEET_WORKER_PROXY_PORT"
+	EnvWorkerTunDevice       = "EXITFLEET_WORKER_TUN_DEVICE"
+	EnvOpenVPNCommand        = "EXITFLEET_OPENVPN_CMD"
+	EnvOpenVPNAuthFile       = "EXITFLEET_OPENVPN_AUTH_FILE"
 )
 
 func DefaultManager() Manager {
 	return Manager{
-		Host:          "0.0.0.0",
-		Port:          8787,
-		VPNGateURL:    DefaultVPNGateURL,
-		ProxyBasePort: 7928,
+		Host:                  "0.0.0.0",
+		Port:                  8787,
+		VPNGateURL:            DefaultVPNGateURL,
+		ProxyBasePort:         7928,
+		DockerCommand:         "docker",
+		DockerWorkerImage:     "exitfleet-worker:local",
+		DockerContainerPrefix: "exitfleet-worker",
 	}
 }
 
@@ -59,6 +70,15 @@ func (cfg Manager) Validate() error {
 	}
 	if cfg.VPNGateURL == "" {
 		return fmt.Errorf("vpngate url is required")
+	}
+	if cfg.DockerCommand == "" {
+		return fmt.Errorf("docker command is required")
+	}
+	if cfg.DockerWorkerImage == "" {
+		return fmt.Errorf("docker worker image is required")
+	}
+	if cfg.DockerContainerPrefix == "" {
+		return fmt.Errorf("docker container prefix is required")
 	}
 	if err := validatePort("port", cfg.Port); err != nil {
 		return err
@@ -129,6 +149,10 @@ func LoadManager(env Env) (Manager, error) {
 	cfg := DefaultManager()
 	cfg.Host = envString(env, EnvManagerHost, cfg.Host)
 	cfg.VPNGateURL = envString(env, EnvVPNGateURL, cfg.VPNGateURL)
+	cfg.DockerCommand = envString(env, EnvDockerCommand, cfg.DockerCommand)
+	cfg.DockerWorkerImage = envString(env, EnvDockerWorkerImage, cfg.DockerWorkerImage)
+	cfg.DockerContainerPrefix = envString(env, EnvDockerContainerPrefix, cfg.DockerContainerPrefix)
+	cfg.DockerNetwork = envString(env, EnvDockerNetwork, cfg.DockerNetwork)
 
 	var err error
 	cfg.Port, err = envInt(env, EnvManagerPort, cfg.Port)

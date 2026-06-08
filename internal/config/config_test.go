@@ -64,12 +64,20 @@ func TestLoadManagerUsesEnvFileValues(t *testing.T) {
 	t.Setenv(EnvManagerPort, "9000")
 	t.Setenv(EnvVPNGateURL, "https://example.test/api")
 	t.Setenv(EnvProxyBasePort, "8100")
+	t.Setenv(EnvDockerCommand, "docker")
+	t.Setenv(EnvDockerWorkerImage, "exitfleet-worker:test")
+	t.Setenv(EnvDockerContainerPrefix, "ef-worker")
+	t.Setenv(EnvDockerNetwork, "exitfleet-net")
 
 	cfg, err := LoadManager(Env{
-		"EXITFLEET_MANAGER_HOST":    "127.0.0.1",
-		"EXITFLEET_MANAGER_PORT":    "9000",
-		"EXITFLEET_VPNGATE_URL":     "https://example.test/api",
-		"EXITFLEET_PROXY_BASE_PORT": "8100",
+		"EXITFLEET_MANAGER_HOST":            "127.0.0.1",
+		"EXITFLEET_MANAGER_PORT":            "9000",
+		"EXITFLEET_VPNGATE_URL":             "https://example.test/api",
+		"EXITFLEET_PROXY_BASE_PORT":         "8100",
+		"EXITFLEET_DOCKER_CMD":              "docker",
+		"EXITFLEET_DOCKER_WORKER_IMAGE":     "exitfleet-worker:test",
+		"EXITFLEET_DOCKER_CONTAINER_PREFIX": "ef-worker",
+		"EXITFLEET_DOCKER_NETWORK":          "exitfleet-net",
 	})
 	if err != nil {
 		t.Fatalf("LoadManager() error = %v", err)
@@ -82,6 +90,15 @@ func TestLoadManagerUsesEnvFileValues(t *testing.T) {
 	}
 	if cfg.ProxyBasePort != 8100 {
 		t.Fatalf("ProxyBasePort = %d", cfg.ProxyBasePort)
+	}
+	if cfg.DockerWorkerImage != "exitfleet-worker:test" {
+		t.Fatalf("DockerWorkerImage = %q", cfg.DockerWorkerImage)
+	}
+	if cfg.DockerContainerPrefix != "ef-worker" {
+		t.Fatalf("DockerContainerPrefix = %q", cfg.DockerContainerPrefix)
+	}
+	if cfg.DockerNetwork != "exitfleet-net" {
+		t.Fatalf("DockerNetwork = %q", cfg.DockerNetwork)
 	}
 }
 

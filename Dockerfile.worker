@@ -1,0 +1,23 @@
+FROM golang:1.22-alpine AS build
+
+WORKDIR /src
+COPY go.mod ./
+COPY cmd ./cmd
+COPY internal ./internal
+RUN go build -o /out/exitfleet-worker ./cmd/worker
+
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates iproute2 openvpn
+COPY --from=build /out/exitfleet-worker /usr/local/bin/exitfleet-worker
+
+ENV EXITFLEET_WORKER_PROXY_HOST=0.0.0.0
+ENV EXITFLEET_WORKER_PROXY_PORT=7928
+ENV EXITFLEET_WORKER_TUN_DEVICE=tun0
+ENV EXITFLEET_OPENVPN_CMD=openvpn
+
+EXPOSE 7928
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:7928/healthz >/dev/null || exit 1
+
+ENTRYPOINT ["exitfleet-worker"]

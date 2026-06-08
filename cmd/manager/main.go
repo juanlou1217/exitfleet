@@ -9,6 +9,7 @@ import (
 
 	"github.com/juanlou1217/exitfleet/internal/api"
 	"github.com/juanlou1217/exitfleet/internal/config"
+	workerdocker "github.com/juanlou1217/exitfleet/internal/docker"
 	"github.com/juanlou1217/exitfleet/internal/harness"
 	"github.com/juanlou1217/exitfleet/internal/manager"
 	"github.com/juanlou1217/exitfleet/internal/node"
@@ -29,6 +30,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "manager configuration error: %v\n", err)
 		os.Exit(1)
 	}
+	workerCfg, err := config.LoadWorker(env)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "worker configuration error: %v\n", err)
+		os.Exit(1)
+	}
 
 	fmt.Printf("%s manager listening on %s\n", harness.ProjectName, cfg.HTTPAddress())
 	mgr := manager.New(manager.Options{
@@ -40,7 +46,16 @@ func main() {
 			}
 			return node.ProbeResult{Latency: latency}, nil
 		}),
-		Launcher:  skeletonLauncher{},
+		Launcher: workerdocker.NewLauncher(workerdocker.Config{
+			Command:         cfg.DockerCommand,
+			Image:           cfg.DockerWorkerImage,
+			ContainerPrefix: cfg.DockerContainerPrefix,
+			WorkerProxyPort: workerCfg.ProxyPort,
+			WorkerTunDevice: workerCfg.TunDevice,
+			OpenVPNCommand:  workerCfg.OpenVPNCommand,
+			OpenVPNAuthFile: workerCfg.OpenVPNAuthFile,
+			Network:         cfg.DockerNetwork,
+		}, nil),
 		ProxyBase: cfg.ProxyBasePort,
 	})
 
@@ -56,18 +71,4 @@ func main() {
 		fmt.Fprintf(os.Stderr, "manager server error: %v\n", err)
 		os.Exit(1)
 	}
-}
-
-type skeletonLauncher struct{}
-
-func (skeletonLauncher) StartWorker(_ context.Context, request manager.LaunchRequest) (manager.WorkerRecord, error) {
-	return manager.WorkerRecord{
-		ID:        "worker-" + request.Node.ID,
-		ProxyPort: request.ProxyPort,
-		State:     "ready",
-	}, nil
-}
-
-func (skeletonLauncher) StopWorker(_ context.Context, workerID string) error {
-	return nil
 }
