@@ -38,9 +38,9 @@ exitfleet-manager
 exitfleet-worker
   OpenVPN 进程
   tun0 设备
-  HTTP/SOCKS5 代理
-  /healthz 健康检查
-  /readyz 就绪检查
+  SOCKS5 代理端口，默认 7928
+  /healthz 健康检查端口，默认 8790
+  /readyz 就绪检查端口，默认 8790
 ```
 
 关键约定：
@@ -85,13 +85,12 @@ Manager 入口。当前只加载默认配置并输出监听地址，后续会接
 
 ### `cmd/worker`
 
-Worker 入口。当前只加载默认配置并输出代理监听地址，后续会接入：
+Worker 入口。当前会加载配置，启动 SOCKS5 代理 listener 和独立 health
+listener。真实 OpenVPN 配置注入仍在后续阶段接入。
 
-- OpenVPN 进程管理
-- TUN 设备检查
-- HTTP/SOCKS5 代理
-- `/healthz`
-- `/readyz`
+- SOCKS5 代理端口默认 `7928`。
+- Health/ready HTTP 端口默认 `8790`。
+- outbound IP 为空时默认 dialer 拒绝直连，避免未接 VPN 时泄漏直连流量。
 
 ### `internal/api`
 
@@ -125,7 +124,8 @@ GET /readyz
 
 ```text
 Manager 管理端口: 8787
-Worker 代理端口: 7928
+Worker SOCKS5 代理端口: 7928
+Worker health 端口: 8790
 Worker TUN 设备: tun0
 ```
 

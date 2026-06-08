@@ -11,14 +11,22 @@ import (
 )
 
 type Config struct {
-	Command         string
-	Image           string
-	ContainerPrefix string
-	WorkerProxyPort int
-	WorkerTunDevice string
-	OpenVPNCommand  string
-	OpenVPNAuthFile string
-	Network         string
+	Command                     string
+	Image                       string
+	ContainerPrefix             string
+	WorkerProxyPort             int
+	WorkerProxyOutboundIP       string
+	WorkerSOCKSMaxConnections   int
+	WorkerHealthHost            string
+	WorkerHealthPort            int
+	WorkerHealthURLs            []string
+	WorkerHealthFailThreshold   int
+	WorkerHealthIntervalSeconds int
+	WorkerHealthTimeoutSeconds  int
+	WorkerTunDevice             string
+	OpenVPNCommand              string
+	OpenVPNAuthFile             string
+	Network                     string
 }
 
 type CommandRunner interface {
@@ -32,12 +40,18 @@ type Launcher struct {
 
 func DefaultConfig() Config {
 	return Config{
-		Command:         "docker",
-		Image:           "exitfleet-worker:local",
-		ContainerPrefix: "exitfleet-worker",
-		WorkerProxyPort: 7928,
-		WorkerTunDevice: "tun0",
-		OpenVPNCommand:  "openvpn",
+		Command:                     "docker",
+		Image:                       "exitfleet-worker:local",
+		ContainerPrefix:             "exitfleet-worker",
+		WorkerProxyPort:             7928,
+		WorkerSOCKSMaxConnections:   200,
+		WorkerHealthHost:            "0.0.0.0",
+		WorkerHealthPort:            8790,
+		WorkerHealthFailThreshold:   3,
+		WorkerHealthIntervalSeconds: 10,
+		WorkerHealthTimeoutSeconds:  8,
+		WorkerTunDevice:             "tun0",
+		OpenVPNCommand:              "openvpn",
 	}
 }
 
@@ -54,6 +68,24 @@ func NewLauncher(config Config, runner CommandRunner) *Launcher {
 	}
 	if config.WorkerProxyPort == 0 {
 		config.WorkerProxyPort = defaults.WorkerProxyPort
+	}
+	if config.WorkerSOCKSMaxConnections == 0 {
+		config.WorkerSOCKSMaxConnections = defaults.WorkerSOCKSMaxConnections
+	}
+	if config.WorkerHealthHost == "" {
+		config.WorkerHealthHost = defaults.WorkerHealthHost
+	}
+	if config.WorkerHealthPort == 0 {
+		config.WorkerHealthPort = defaults.WorkerHealthPort
+	}
+	if config.WorkerHealthFailThreshold == 0 {
+		config.WorkerHealthFailThreshold = defaults.WorkerHealthFailThreshold
+	}
+	if config.WorkerHealthIntervalSeconds == 0 {
+		config.WorkerHealthIntervalSeconds = defaults.WorkerHealthIntervalSeconds
+	}
+	if config.WorkerHealthTimeoutSeconds == 0 {
+		config.WorkerHealthTimeoutSeconds = defaults.WorkerHealthTimeoutSeconds
 	}
 	if config.WorkerTunDevice == "" {
 		config.WorkerTunDevice = defaults.WorkerTunDevice
@@ -85,6 +117,16 @@ func (l *Launcher) StartWorker(ctx context.Context, request manager.LaunchReques
 	if l.config.OpenVPNAuthFile != "" {
 		args = append(args, "-e", "EXITFLEET_OPENVPN_AUTH_FILE="+l.config.OpenVPNAuthFile)
 	}
+	args = append(args,
+		"-e", "EXITFLEET_WORKER_HEALTH_HOST="+l.config.WorkerHealthHost,
+		"-e", fmt.Sprintf("EXITFLEET_WORKER_HEALTH_PORT=%d", l.config.WorkerHealthPort),
+		"-e", "EXITFLEET_WORKER_HEALTH_URLS="+strings.Join(l.config.WorkerHealthURLs, ","),
+		"-e", fmt.Sprintf("EXITFLEET_WORKER_HEALTH_FAIL_THRESHOLD=%d", l.config.WorkerHealthFailThreshold),
+		"-e", fmt.Sprintf("EXITFLEET_WORKER_HEALTH_INTERVAL_SECONDS=%d", l.config.WorkerHealthIntervalSeconds),
+		"-e", fmt.Sprintf("EXITFLEET_WORKER_HEALTH_TIMEOUT_SECONDS=%d", l.config.WorkerHealthTimeoutSeconds),
+		"-e", "EXITFLEET_WORKER_PROXY_OUTBOUND_IP="+l.config.WorkerProxyOutboundIP,
+		"-e", fmt.Sprintf("EXITFLEET_WORKER_SOCKS_MAX_CONNECTIONS=%d", l.config.WorkerSOCKSMaxConnections),
+	)
 	if l.config.Network != "" {
 		args = append(args, "--network", l.config.Network)
 	}

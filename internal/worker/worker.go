@@ -42,22 +42,25 @@ func (fn RunnerFunc) Run(ctx context.Context, command []string) (RunResult, erro
 }
 
 type Status struct {
-	State     string `json:"state"`
-	TunDevice string `json:"tun_device"`
-	LastError string `json:"last_error,omitempty"`
-	Message   string `json:"message,omitempty"`
+	State          string `json:"state"`
+	TunDevice      string `json:"tun_device"`
+	LastError      string `json:"last_error,omitempty"`
+	Message        string `json:"message,omitempty"`
+	HealthFailures int    `json:"health_failures,omitempty"`
 }
 
 type Options struct {
-	Config OpenVPNConfig
-	Runner Runner
+	Config        OpenVPNConfig
+	Runner        Runner
+	HealthChecker *HealthChecker
 }
 
 type Worker struct {
-	mu     sync.RWMutex
-	config OpenVPNConfig
-	runner Runner
-	status Status
+	mu            sync.RWMutex
+	config        OpenVPNConfig
+	runner        Runner
+	healthChecker *HealthChecker
+	status        Status
 }
 
 func New(options Options) *Worker {
@@ -69,9 +72,10 @@ func New(options Options) *Worker {
 		cfg.TunDevice = "tun0"
 	}
 	return &Worker{
-		config: cfg,
-		runner: options.Runner,
-		status: Status{State: StateStopped, TunDevice: cfg.TunDevice},
+		config:        cfg,
+		runner:        options.Runner,
+		healthChecker: options.HealthChecker,
+		status:        Status{State: StateStopped, TunDevice: cfg.TunDevice},
 	}
 }
 
@@ -137,6 +141,22 @@ func (w *Worker) Stop(ctx context.Context) error {
 	return nil
 }
 
+func (w *Worker) CheckHealth(ctx context.Context) HealthResult {
+	result := w.healthChecker.CheckOnce(ctx)
+	status := w.Status()
+	status.HealthFailures = result.ConsecutiveFailures
+	if status.State == StateReady && !w.healthChecker.Ready() {
+		status.State = StateFailed
+		if result.LastError != "" {
+			status.LastError = result.LastError
+		} else {
+			status.LastError = "health check failed"
+		}
+	}
+	w.setStatus(status)
+	return result
+}
+
 func (w *Worker) Status() Status {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
@@ -152,7 +172,7 @@ func (w *Worker) HealthHandler() http.Handler {
 func (w *Worker) ReadyHandler() http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		status := w.Status()
-		if status.State != StateReady {
+		if status.State != StateReady || !w.healthChecker.Ready() {
 			writeJSON(rw, http.StatusServiceUnavailable, status)
 			return
 		}

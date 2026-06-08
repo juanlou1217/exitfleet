@@ -15,8 +15,11 @@
 
 ## Worker API
 
+Worker HTTP health endpoints listen on the worker health address, default
+`0.0.0.0:8790`. The SOCKS5 proxy listens separately on the worker proxy
+address, default `0.0.0.0:7928`.
+
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/healthz` | Process liveness. |
-| `GET` | `/readyz` | OpenVPN and proxy readiness. |
-
+| `GET` | `/readyz` | OpenVPN, proxy, and health-check readiness. |

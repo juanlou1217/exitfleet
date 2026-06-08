@@ -29,6 +29,15 @@ func TestDefaultWorkerUsesFirstProxyPortAndTun0(t *testing.T) {
 	if cfg.TunDevice != "tun0" {
 		t.Fatalf("DefaultWorker().TunDevice = %q, want tun0", cfg.TunDevice)
 	}
+	if cfg.HealthAddress() != "0.0.0.0:8790" {
+		t.Fatalf("DefaultWorker().HealthAddress() = %q, want 0.0.0.0:8790", cfg.HealthAddress())
+	}
+	if cfg.HealthFailThreshold != 3 {
+		t.Fatalf("HealthFailThreshold = %d, want 3", cfg.HealthFailThreshold)
+	}
+	if cfg.SOCKSMaxConnections != 200 {
+		t.Fatalf("SOCKSMaxConnections = %d, want 200", cfg.SOCKSMaxConnections)
+	}
 }
 
 func TestWorkerRejectsMissingTunDevice(t *testing.T) {
@@ -108,13 +117,29 @@ func TestLoadWorkerUsesEnvFileValues(t *testing.T) {
 	t.Setenv(EnvWorkerTunDevice, "tun7")
 	t.Setenv(EnvOpenVPNCommand, "/usr/sbin/openvpn")
 	t.Setenv(EnvOpenVPNAuthFile, "/run/exitfleet/auth.txt")
+	t.Setenv(EnvWorkerHealthHost, "127.0.0.1")
+	t.Setenv(EnvWorkerHealthPort, "8791")
+	t.Setenv(EnvWorkerHealthURLs, "https://one.test, https://two.test")
+	t.Setenv(EnvWorkerHealthFailThreshold, "5")
+	t.Setenv(EnvWorkerHealthIntervalSeconds, "11")
+	t.Setenv(EnvWorkerHealthTimeoutSeconds, "7")
+	t.Setenv(EnvWorkerProxyOutboundIP, "10.8.0.2")
+	t.Setenv(EnvWorkerSOCKSMaxConnections, "77")
 
 	cfg, err := LoadWorker(Env{
-		"EXITFLEET_WORKER_PROXY_HOST": "127.0.0.1",
-		"EXITFLEET_WORKER_PROXY_PORT": "8101",
-		"EXITFLEET_WORKER_TUN_DEVICE": "tun7",
-		"EXITFLEET_OPENVPN_CMD":       "/usr/sbin/openvpn",
-		"EXITFLEET_OPENVPN_AUTH_FILE": "/run/exitfleet/auth.txt",
+		"EXITFLEET_WORKER_PROXY_HOST":              "127.0.0.1",
+		"EXITFLEET_WORKER_PROXY_PORT":              "8101",
+		"EXITFLEET_WORKER_TUN_DEVICE":              "tun7",
+		"EXITFLEET_OPENVPN_CMD":                    "/usr/sbin/openvpn",
+		"EXITFLEET_OPENVPN_AUTH_FILE":              "/run/exitfleet/auth.txt",
+		"EXITFLEET_WORKER_HEALTH_HOST":             "127.0.0.1",
+		"EXITFLEET_WORKER_HEALTH_PORT":             "8791",
+		"EXITFLEET_WORKER_HEALTH_URLS":             "https://one.test, https://two.test",
+		"EXITFLEET_WORKER_HEALTH_FAIL_THRESHOLD":   "5",
+		"EXITFLEET_WORKER_HEALTH_INTERVAL_SECONDS": "11",
+		"EXITFLEET_WORKER_HEALTH_TIMEOUT_SECONDS":  "7",
+		"EXITFLEET_WORKER_PROXY_OUTBOUND_IP":       "10.8.0.2",
+		"EXITFLEET_WORKER_SOCKS_MAX_CONNECTIONS":   "77",
 	})
 	if err != nil {
 		t.Fatalf("LoadWorker() error = %v", err)
@@ -130,6 +155,21 @@ func TestLoadWorkerUsesEnvFileValues(t *testing.T) {
 	}
 	if cfg.OpenVPNAuthFile != "/run/exitfleet/auth.txt" {
 		t.Fatalf("OpenVPNAuthFile = %q", cfg.OpenVPNAuthFile)
+	}
+	if cfg.HealthAddress() != "127.0.0.1:8791" {
+		t.Fatalf("HealthAddress() = %q", cfg.HealthAddress())
+	}
+	if len(cfg.HealthURLs) != 2 || cfg.HealthURLs[0] != "https://one.test" || cfg.HealthURLs[1] != "https://two.test" {
+		t.Fatalf("HealthURLs = %#v", cfg.HealthURLs)
+	}
+	if cfg.HealthFailThreshold != 5 || cfg.HealthIntervalSeconds != 11 || cfg.HealthTimeoutSeconds != 7 {
+		t.Fatalf("health config = %#v", cfg)
+	}
+	if cfg.ProxyOutboundIP != "10.8.0.2" {
+		t.Fatalf("ProxyOutboundIP = %q", cfg.ProxyOutboundIP)
+	}
+	if cfg.SOCKSMaxConnections != 77 {
+		t.Fatalf("SOCKSMaxConnections = %d", cfg.SOCKSMaxConnections)
 	}
 }
 

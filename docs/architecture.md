@@ -20,8 +20,8 @@ exitfleet-manager
 exitfleet-worker
   one OpenVPN process
   one tun0 device inside the container namespace
-  one HTTP/SOCKS5 proxy listener
-  /healthz and /readyz endpoints
+  one SOCKS5 proxy listener on the worker proxy port
+  /healthz and /readyz endpoints on the worker health port
 ```
 
 One active exit node maps to exactly one worker container. Candidate nodes stay
@@ -30,7 +30,8 @@ in the manager inventory until the scheduler starts them.
 ## Interface Boundaries
 
 Manager-facing API routes live under `/api/v1`. Worker health routes stay small
-and local to each worker.
+and local to each worker. The default worker SOCKS5 proxy listener is
+`0.0.0.0:7928`; the default worker health listener is `0.0.0.0:8790`.
 
 - `GET /api/v1/state`
 - `GET /api/v1/nodes`
@@ -48,4 +49,3 @@ and local to each worker.
 The first milestone is a compiling project skeleton with stable package
 boundaries, explicit API contracts, and harness rules strong enough for future
 AI-assisted changes to stay inside the intended architecture.
-
