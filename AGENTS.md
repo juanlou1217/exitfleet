@@ -165,7 +165,7 @@ docs/templates/decision.md       架构决策模板
 - OpenVPN 第一阶段作为外部进程调用，不重写 VPN 协议。
 - 默认管理端口是 `8787`。
 - 默认代理端口从 `7928` 开始。
-- UI 第一阶段优先 Go templates + HTMX + Alpine.js + SSE，不默认使用 React/Next.js。
+- UI 初期可以从 Go templates + HTMX + Alpine.js + SSE 起步；如果交互复杂度提升，可以通过技术方案评审后引入 React 在线包或构建链。
 - 持久化第一选择 SQLite。
 - 网络、Docker、进程、文件系统操作必须有超时、错误返回和日志。
 
@@ -199,7 +199,7 @@ git push --force origin main
 - 不允许把 Manager、Worker、Proxy、Docker 调度、OpenVPN 进程管理揉进一个大 package。
 - 不允许把项目重新写成单文件程序。
 - 不允许把原 Python 项目复制进本仓库。
-- 不允许默认引入 Gin、Echo、React、Next.js 或其他大型框架。
+- 引入 Gin、Echo、React、Next.js 或其他框架前，必须先在 `docs/designs/` 记录技术方案、收益、代价、集成方式和测试策略。
 - 不允许重写 VPN 协议；OpenVPN 作为外部进程保留到架构稳定后再评估。
 - 不允许提交密钥、token、真实代理凭据、私有 OpenVPN 配置。
 - 长循环必须支持退出信号。

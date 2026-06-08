@@ -153,14 +153,6 @@ RuntimeRule = One active exit node maps to exactly one worker container.
 - 代理：Go 实现 HTTP CONNECT + SOCKS5
 - 日志：结构化日志 + SSE 流式输出
 
-暂不默认引入：
-
-- Gin
-- Echo
-- React
-- Next.js
-- Rust 核心实现
-
 ## 开发命令
 
 ```bash
