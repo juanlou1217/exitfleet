@@ -32,6 +32,11 @@ internal/
 docs/
   architecture.md   架构设计
   api.md            API 草案
+  features/         功能开发记录
+  designs/          技术方案记录
+  tests/            测试方案与验证记录
+  decisions/        架构决策记录
+  templates/        AI 生成文档模板
 AGENTS.md           AI 修改约束与项目导航
 README.md           项目说明
 go.mod              Go module 定义
@@ -122,14 +127,30 @@ internal/harness/harness_test.go  harness 约束测试
 技术栈概览：
 
 - Markdown
-- 架构和接口文档
+- 架构、接口、功能、方案、测试和决策文档
+- 所有 AI 生成的重要开发产物必须落盘记录
 
 目录结构详解：
 
 ```text
-docs/architecture.md  Manager/Worker 架构和运行模型
-docs/api.md           REST API 和 worker health API 草案
+docs/architecture.md             Manager/Worker 架构和运行模型
+docs/api.md                      REST API 和 worker health API 草案
+docs/features/                   功能开发记录，一项功能一个 Markdown
+docs/designs/                    技术方案记录，一项方案一个 Markdown
+docs/tests/                      测试计划、测试用例、验证结果
+docs/decisions/                  ADR 架构决策记录
+docs/templates/feature.md        功能记录模板
+docs/templates/technical-plan.md 技术方案模板
+docs/templates/test-plan.md      测试计划模板
+docs/templates/decision.md       架构决策模板
 ```
+
+功能描述：
+
+- 记录每个新功能的目标、范围、接口、数据流和验收标准。
+- 记录技术方案、取舍、风险、回滚策略和后续任务。
+- 记录测试用例、测试命令、验证结果和未覆盖风险。
+- 记录会影响架构边界的决策，避免口头约定丢失。
 
 ## 关键业务约定
 
@@ -169,6 +190,12 @@ git push --force origin main
 
 - 修改前必须阅读本文件和相关目录。
 - 新行为先写测试，纯文档和机械配置除外。
+- 新功能开发前必须在 `docs/features/` 新建或更新功能记录。
+- 涉及架构、模块边界、依赖、运行模型、接口设计时，必须在 `docs/designs/` 新建或更新技术方案。
+- 涉及长期架构取舍时，必须在 `docs/decisions/` 新建 ADR。
+- 新增或修改行为后，必须在 `docs/tests/` 记录测试计划、测试用例、执行结果和未覆盖风险。
+- AI 生成的方案、接口、测试用例、验证结论不能只停留在聊天中，必须同步进项目文档。
+- 文档命名使用 `YYYY-MM-DD-short-topic.md`，短标题用小写英文和连字符。
 - 不允许把 Manager、Worker、Proxy、Docker 调度、OpenVPN 进程管理揉进一个大 package。
 - 不允许把项目重新写成单文件程序。
 - 不允许把原 Python 项目复制进本仓库。
@@ -202,10 +229,34 @@ docker build -f Dockerfile.worker .
 
 如果当前机器缺少 `go`、Docker 或网络权限，最终回复必须明确说明哪些验证没有执行。
 
+## AI 开发记录要求
+
+每次进入实质开发前，AI 必须判断本次改动属于哪类记录：
+
+```text
+功能行为变化      -> docs/features/
+技术方案或模块边界 -> docs/designs/
+测试计划和结果    -> docs/tests/
+架构长期决策      -> docs/decisions/
+```
+
+记录要求：
+
+- 功能记录必须包含目标、范围、非目标、相关接口、数据模型、验收标准。
+- 技术方案必须包含背景、方案、取舍、风险、回滚策略、实施步骤。
+- 测试记录必须包含测试用例、测试命令、实际结果、未执行原因、剩余风险。
+- ADR 必须包含状态、背景、决策、后果、替代方案。
+- 如果实现和文档不一致，必须先更新文档再完成最终回复。
+- 如果只是修正错字或格式，可以不新增记录，但不能违反已有记录。
+
 ## 重要文档
 
 - `AGENTS.md`
 - `docs/architecture.md`
 - `docs/api.md`
+- `docs/features/`
+- `docs/designs/`
+- `docs/tests/`
+- `docs/decisions/`
 - 参考仓库：`https://github.com/Guozh1peng/aimili-vpngate`
 - 原项目代码不属于本仓库；需要对照时单独克隆，不要复制进 ExitFleet。
