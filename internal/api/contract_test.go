@@ -26,4 +26,3 @@ func assertRoute(t *testing.T, routes []Route, method string, path string) {
 	}
 	t.Fatalf("route %s %s not found in %#v", method, path, routes)
 }
-

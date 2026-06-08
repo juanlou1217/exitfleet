@@ -35,4 +35,3 @@ func TestWorkerRejectsMissingTunDevice(t *testing.T) {
 		t.Fatal("Worker.Validate() error = nil, want missing tun device error")
 	}
 }
-

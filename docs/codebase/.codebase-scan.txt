@@ -1,0 +1,134 @@
+
+=== DIRECTORY TREE (max depth 3, source files only) ===
+AGENTS.md
+README.md
+cmd
+cmd/manager
+cmd/manager/main.go
+cmd/worker
+cmd/worker/main.go
+docs
+docs/api.md
+docs/architecture.md
+docs/codebase
+docs/codebase/.codebase-scan.txt
+docs/decisions
+docs/decisions/.gitkeep
+docs/decisions/2026-06-08-ai-development-records.md
+docs/decisions/2026-06-08-ui-stack-flexibility.md
+docs/designs
+docs/designs/.gitkeep
+docs/designs/2026-06-08-project-initialization.md
+docs/designs/2026-06-08-release-distribution.md
+docs/features
+docs/features/.gitkeep
+docs/templates
+docs/templates/decision.md
+docs/templates/feature.md
+docs/templates/technical-plan.md
+docs/templates/test-plan.md
+docs/tests
+docs/tests/.gitkeep
+docs/tests/2026-06-08-project-initialization.md
+docs/tests/2026-06-08-release-distribution-docs.md
+docs/tests/2026-06-08-ui-stack-docs.md
+go.mod
+internal
+internal/api
+internal/api/contract.go
+internal/api/contract_test.go
+internal/config
+internal/config/config.go
+internal/config/config_test.go
+internal/harness
+internal/harness/harness.go
+internal/harness/harness_test.go
+
+=== STACK DETECTION (manifest files) ===
+
+--- go.mod ---
+module github.com/juanlou1217/exitfleet
+
+go 1.22
+
+
+
+=== ENTRY POINTS ===
+No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
+
+=== LINTING AND FORMATTING CONFIG ===
+No linting or formatting config files found in project root.
+
+=== ENVIRONMENT VARIABLE TEMPLATES ===
+No .env.example or .env.template found. Identify required environment variables by searching the code and config for environment variable reads.
+
+=== TODO / FIXME / HACK (production code only, test dirs excluded) ===
+None found.
+
+=== GIT RECENT COMMITS (last 20) ===
+e283cd8 docs: clarify release distribution path
+779c315 docs: allow future ui stack flexibility
+0508bd5 docs: remove reference clone note
+a8b07bf docs: add ai development record system
+73c67fa docs: remove local machine paths
+8211aaf docs: rewrite README in Chinese
+19776be chore: rebuild exitfleet go project
+
+=== HIGH-CHURN FILES (last 90 days, top 20) ===
+   6 README.md
+   4 AGENTS.md
+   1 docs/designs/2026-06-08-release-distribution.md
+   1 docs/tests/2026-06-08-release-distribution-docs.md
+   1 docs/decisions/2026-06-08-ui-stack-flexibility.md
+   1 docs/tests/2026-06-08-ui-stack-docs.md
+   1 docs/decisions/.gitkeep
+   1 docs/decisions/2026-06-08-ai-development-records.md
+   1 docs/designs/.gitkeep
+   1 docs/designs/2026-06-08-project-initialization.md
+   1 docs/features/.gitkeep
+   1 docs/templates/decision.md
+   1 docs/templates/feature.md
+   1 docs/templates/technical-plan.md
+   1 docs/templates/test-plan.md
+   1 docs/tests/.gitkeep
+   1 docs/tests/2026-06-08-project-initialization.md
+   1 cmd/manager/main.go
+   1 cmd/worker/main.go
+   1 docs/api.md
+
+=== MONOREPO SIGNALS ===
+No monorepo signals detected.
+
+=== CODE METRICS ===
+Total files scanned: 25
+Total lines of code: 240
+
+Files by language:
+  Other: 17
+  Go: 8
+
+Top 10 largest files:
+AGENTS.md: 8.4KB
+README.md: 5.0KB
+docs/designs/2026-06-08-release-distribution.md: 2.1KB
+docs/designs/2026-06-08-project-initialization.md: 1.9KB
+docs/tests/2026-06-08-project-initialization.md: 1.7KB
+docs/tests/2026-06-08-ui-stack-docs.md: 1.5KB
+docs/tests/2026-06-08-release-distribution-docs.md: 1.5KB
+docs/architecture.md: 1.3KB
+docs/decisions/2026-06-08-ui-stack-flexibility.md: 1.3KB
+docs/decisions/2026-06-08-ai-development-records.md: 1.2KB
+
+=== CI/CD PIPELINES ===
+No CI/CD pipelines detected.
+
+=== CONTAINERS & ORCHESTRATION ===
+No containerization configs detected.
+
+=== SECURITY & COMPLIANCE ===
+No security configs detected.
+
+=== PERFORMANCE & TESTING ===
+No performance testing configs detected.
+
+=== SCAN COMPLETE ===

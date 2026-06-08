@@ -13,4 +13,3 @@ func TestHarnessDeclaresProjectGoalAndRuntimeRule(t *testing.T) {
 		t.Fatalf("RuntimeRule = %q", RuntimeRule)
 	}
 }
-
