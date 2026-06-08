@@ -12,7 +12,16 @@ import (
 )
 
 func main() {
-	cfg := config.DefaultWorker()
+	env, err := config.LoadEnvFile(".env")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "worker environment error: %v\n", err)
+		os.Exit(1)
+	}
+	cfg, err := config.LoadWorker(env)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "worker configuration error: %v\n", err)
+		os.Exit(1)
+	}
 	if err := cfg.Validate(); err != nil {
 		fmt.Fprintf(os.Stderr, "worker configuration error: %v\n", err)
 		os.Exit(1)
@@ -21,7 +30,10 @@ func main() {
 	fmt.Printf("%s worker proxy listening on %s via %s\n", harness.ProjectName, cfg.ProxyAddress(), cfg.TunDevice)
 	w := worker.New(worker.Options{
 		Config: worker.OpenVPNConfig{
-			TunDevice: cfg.TunDevice,
+			Command:    cfg.OpenVPNCommand,
+			AuthFile:   cfg.OpenVPNAuthFile,
+			TunDevice:  cfg.TunDevice,
+			ConfigFile: "",
 		},
 	})
 

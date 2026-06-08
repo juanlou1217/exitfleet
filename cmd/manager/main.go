@@ -15,7 +15,16 @@ import (
 )
 
 func main() {
-	cfg := config.DefaultManager()
+	env, err := config.LoadEnvFile(".env")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "manager environment error: %v\n", err)
+		os.Exit(1)
+	}
+	cfg, err := config.LoadManager(env)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "manager configuration error: %v\n", err)
+		os.Exit(1)
+	}
 	if err := cfg.Validate(); err != nil {
 		fmt.Fprintf(os.Stderr, "manager configuration error: %v\n", err)
 		os.Exit(1)
@@ -23,7 +32,7 @@ func main() {
 
 	fmt.Printf("%s manager listening on %s\n", harness.ProjectName, cfg.HTTPAddress())
 	mgr := manager.New(manager.Options{
-		Source: node.HTTPSource{URL: "https://www.vpngate.net/api/iphone/"},
+		Source: node.HTTPSource{URL: cfg.VPNGateURL},
 		ProbeRunner: node.ProbeFunc(func(_ context.Context, n node.Node) (node.ProbeResult, error) {
 			latency := time.Duration(n.PingMS) * time.Millisecond
 			if latency == 0 {
@@ -32,7 +41,7 @@ func main() {
 			return node.ProbeResult{Latency: latency}, nil
 		}),
 		Launcher:  skeletonLauncher{},
-		ProxyBase: config.DefaultWorker().ProxyPort,
+		ProxyBase: cfg.ProxyBasePort,
 	})
 
 	server := &http.Server{
