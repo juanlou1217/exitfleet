@@ -113,6 +113,33 @@ docker run --rm \
 CentOS-compatible：Rocky/Alma/CentOS Stream 环境
 ```
 
+### 北京服务器的定位
+
+北京服务器可以作为真实 Linux 测试环境，但它不一定适合验证“VPNGate 成功连接”这条 happy path。原因是中国大陆机房到 `www.vpngate.net`、OpenVPN 节点、出口 IP 查询服务的访问可能受到 DNS、TLS、TCP 连接、UDP/TCP OpenVPN 协议层面的限制。
+
+因此北京服务器建议承担两类测试：
+
+```text
+正向测试：
+  Linux 基础环境
+  安装脚本
+  Docker/worker 权限
+  /dev/net/tun
+  OpenVPN 命令存在性
+  proxy 进程启动
+  health/readiness 状态
+
+诊断测试：
+  VPNGate API DNS 失败
+  API 连接失败
+  OpenVPN 节点连接超时
+  TLS handshake 失败
+  出口代理不可用
+  防火墙、安全组、rp_filter、TUN 缺失
+```
+
+它不应该是唯一的真实成功路径环境。为了验证真实 VPN 出口成功，至少还需要一个网络更中性的 Linux 环境，例如香港、日本、新加坡、美国或欧洲 VPS。这样可以把“代码问题”和“北京网络限制”区分开。
+
 真实测试覆盖：
 
 - 安装 OpenVPN。
@@ -125,6 +152,192 @@ CentOS-compatible：Rocky/Alma/CentOS Stream 环境
 - 验证出口 IP 与 worker 节点一致。
 - 验证断线后健康检查进入失败状态。
 - 验证日志可查询。
+
+## 测试环境准备
+
+### 北京服务器基础要求
+
+需要准备：
+
+```text
+系统：Debian/Ubuntu/CentOS-compatible/Alpine 之一
+权限：root 或具备 sudo 权限
+内核能力：支持 /dev/net/tun
+容器能力：支持 Docker 或兼容容器运行时
+网络：允许出站 TCP 443、TCP/UDP OpenVPN 常见端口
+安全组：放行 manager 管理端口和 worker 代理端口
+磁盘：至少 2GB 可用空间
+内存：建议 1GB 以上
+```
+
+需要先采集环境快照：
+
+```bash
+uname -a
+cat /etc/os-release
+id
+ip route
+ls -l /dev/net/tun
+sysctl net.ipv4.ip_forward
+sysctl net.ipv4.conf.all.rp_filter
+docker version
+openvpn --version
+```
+
+如果某些命令不存在，也要记录下来。这些缺失本身就是兼容性测试输入。
+
+### 成功路径测试环境
+
+如果北京服务器无法稳定连接 VPNGate，建议额外准备一台境外 Linux VPS，用于成功路径校准：
+
+```text
+Ubuntu LTS VPS
+TUN 已开启
+Docker 可用
+OpenVPN 可用
+能访问 www.vpngate.net
+能连接至少一个 VPNGate OpenVPN 节点
+能访问出口 IP 查询服务
+```
+
+北京服务器和境外 VPS 的作用不同：
+
+```text
+北京服务器：校准受限网络诊断和失败路径
+境外 VPS：校准真实连接成功路径和代理出口
+```
+
+## 测试数据准备
+
+真实测试前需要准备以下数据。能用假数据的部分先用 fixture，必须真实联网的部分单独标记。
+
+### VPNGate API 样本
+
+用途：校准 `internal/vpngate` 的 CSV 解析和节点模型。
+
+准备：
+
+```text
+原始 API 响应样本：vpngate_iphone_sample.csv
+空响应样本：vpngate_empty.csv
+损坏 CSV 样本：vpngate_malformed.csv
+包含 UDP/TCP 节点的样本
+包含 Base64 OpenVPN 配置的样本
+```
+
+建议保存到：
+
+```text
+internal/vpngate/testdata/
+```
+
+### OpenVPN 配置样本
+
+用途：校准 OpenVPN 配置解码、remote/proto 解析、命令构建。
+
+准备：
+
+```text
+tcp.ovpn
+udp.ovpn
+missing_remote.ovpn
+invalid_base64_config.txt
+route_nopull_expected_args.txt
+```
+
+建议保存到：
+
+```text
+internal/openvpn/testdata/
+```
+
+### OpenVPN 日志样本
+
+用途：校准错误分类和诊断提示。
+
+准备：
+
+```text
+openvpn_success.log
+openvpn_auth_failed.log
+openvpn_tun_missing.log
+openvpn_dns_failed.log
+openvpn_tls_timeout.log
+openvpn_connection_timeout.log
+openvpn_connection_refused.log
+```
+
+这些日志可以从北京服务器和境外 VPS 真实测试中采集，然后脱敏后固化为单元测试 fixture。
+
+### Proxy 协议样本
+
+用途：校准 HTTP CONNECT、普通 HTTP proxy、SOCKS5 握手解析。
+
+准备：
+
+```text
+http_connect_request.txt
+http_absolute_request.txt
+socks5_connect_ipv4.bin
+socks5_connect_domain.bin
+socks5_connect_ipv6.bin
+```
+
+建议保存到：
+
+```text
+internal/proxy/testdata/
+```
+
+### 调度和状态样本
+
+用途：校准自动切换、固定 IP、固定国家、IP 类型偏好。
+
+准备：
+
+```text
+nodes_mixed_countries.json
+nodes_all_failed.json
+nodes_fixed_region_jp.json
+nodes_ip_types.json
+workers_running.json
+workers_unhealthy.json
+```
+
+建议保存到：
+
+```text
+internal/node/testdata/
+internal/scheduler/testdata/
+internal/worker/testdata/
+```
+
+### 真实端到端记录
+
+用途：校准真实测试是否成功，后续回归时可对照。
+
+每次真实测试必须记录：
+
+```text
+测试时间
+服务器地区和系统版本
+公网 IP
+TUN 状态
+Docker/OpenVPN 版本
+VPNGate API 拉取结果
+选中的节点国家/IP/proto/port
+OpenVPN 连接日志尾部
+代理监听端口
+通过代理查询到的出口 IP
+健康检查结果
+失败诊断结果
+```
+
+这些记录写入：
+
+```text
+docs/tests/real-linux-e2e.md
+```
 
 ## Go 单元测试如何用真实测试校准
 
@@ -236,4 +449,3 @@ EXITFLEET_REAL_E2E=1 go test -tags=real_e2e ./...
 - 静态检查本文档存在。
 - 检查测试记录存在。
 - 后续实现时，真实 E2E 测试结果必须记录到 `docs/tests/`。
-
