@@ -31,7 +31,7 @@ internal/openvpn/command_test.go
 测试计划、Go 单元测试用例清单、测试命令、执行结果和未覆盖风险必须写到：
 
 ```text
-docs/tests/YYYY-MM-DD-short-topic.md
+docs/tests/short-topic.md
 ```
 
 注意：`docs/tests/` 只是记录，不是测试用例本体。真正的测试用例必须写在 `*_test.go` 中。

@@ -27,7 +27,7 @@
 | 检查测试位置规则 | `rg "Go 单元测试：.*\\*_test.go|测试记录文档：docs/tests" AGENTS.md` | 能匹配测试位置说明 | 静态检查 |
 | 检查提交门禁 | `rg "全部必需测试必须通过后才能提交|功能代码提交默认不能绕过必需测试" AGENTS.md` | 能匹配提交门禁 | 静态检查 |
 | 检查测试 README | `test -f docs/tests/README.md` | 文件存在 | 静态检查 |
-| 检查 ADR | `test -f docs/decisions/2026-06-08-test-gate.md` | 文件存在 | 静态检查 |
+| 检查 ADR | `test -f docs/decisions/test-gate.md` | 文件存在 | 静态检查 |
 
 ## 测试命令
 
@@ -35,7 +35,7 @@
 rg "Go 单元测试：.*\\*_test.go|测试记录文档：docs/tests" AGENTS.md
 rg "全部必需测试必须通过后才能提交|功能代码提交默认不能绕过必需测试" AGENTS.md
 test -f docs/tests/README.md
-test -f docs/decisions/2026-06-08-test-gate.md
+test -f docs/decisions/test-gate.md
 ```
 
 ## 执行结果
@@ -45,7 +45,7 @@ test -f docs/decisions/2026-06-08-test-gate.md
   - `rg "Go 单元测试：.*\\*_test.go|测试记录文档：docs/tests" AGENTS.md` 已执行，能匹配测试位置说明。
   - `rg "全部必需测试必须通过后才能提交|功能代码提交默认不能绕过必需测试" AGENTS.md` 已执行，能匹配提交门禁。
   - `test -f docs/tests/README.md` 已执行，文件存在。
-  - `test -f docs/decisions/2026-06-08-test-gate.md` 已执行，文件存在。
+  - `test -f docs/decisions/test-gate.md` 已执行，文件存在。
   - `rg "docs/tests.*不能替代 Go 单元测试|真正的测试用例必须写在.*\\*_test.go" docs/tests/README.md AGENTS.md` 已执行，能匹配 Go 单元测试和测试记录的边界。
 
 ## 未覆盖风险

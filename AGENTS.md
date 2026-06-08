@@ -195,7 +195,7 @@ git push --force origin main
 - 涉及长期架构取舍时，必须在 `docs/decisions/` 新建 ADR。
 - 新增或修改行为后，必须在 `docs/tests/` 记录测试计划、Go 单元测试用例、执行结果和未覆盖风险。
 - AI 生成的方案、接口、Go 单元测试用例、验证结论不能只停留在聊天中，必须同步进项目文档。
-- 文档命名使用 `YYYY-MM-DD-short-topic.md`，短标题用小写英文和连字符。
+- 文档文件名使用稳定的小写英文主题名和连字符，不带日期，例如 `release-distribution.md`。
 - 不允许把 Manager、Worker、Proxy、Docker 调度、OpenVPN 进程管理揉进一个大 package。
 - 不允许把项目重新写成单文件程序。
 - 不允许把原 Python 项目复制进本仓库。
@@ -211,7 +211,7 @@ Go 单元测试用例位置：
 
 ```text
 Go 单元测试：与被测 Go package 同目录，文件名必须使用 *_test.go
-测试记录文档：docs/tests/YYYY-MM-DD-short-topic.md
+测试记录文档：docs/tests/short-topic.md
 测试记录模板：docs/templates/test-plan.md
 ```
 
